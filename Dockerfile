@@ -87,4 +87,4 @@ COPY 	--from=builder-alac /usr/local/lib/libalac.* /usr/local/lib/
 COPY 	--from=builder-sps /etc/shairport-sync* /etc/
 COPY    --from=builder-sps /usr/local/bin/shairport-sync /usr/local/bin/shairport-sync
 
-CMD     ["/usr/local/bin/shairport-sync"]
+ENTRYPOINT ["/usr/local/bin/shairport-sync", "-u"]
