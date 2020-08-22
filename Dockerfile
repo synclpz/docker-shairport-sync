@@ -24,8 +24,8 @@ RUN apk update && apk upgrade && \
 # ALAC Build System:
 FROM builder-base AS builder-alac
 
-RUN 	git clone https://github.com/mikebrady/alac
 WORKDIR /usr/src/alac
+RUN 	git clone https://github.com/mikebrady/alac .
 RUN 	autoreconf -fi
 RUN 	./configure
 RUN 	make
@@ -41,23 +41,23 @@ COPY 	--from=builder-alac /usr/local/lib/libalac.* /usr/local/lib/
 COPY 	--from=builder-alac /usr/local/lib/pkgconfig/alac.pc /usr/local/lib/pkgconfig/alac.pc
 COPY 	--from=builder-alac /usr/local/include /usr/local/include
 
-RUN 	git clone https://github.com/mikebrady/shairport-sync
 WORKDIR /usr/src/shairport-sync
+RUN 	git clone https://github.com/mikebrady/shairport-sync .
 RUN 	git checkout "$SHAIRPORT_SYNC_BRANCH"
 RUN 	autoreconf -fi
 RUN 	./configure \
-              --with-alsa \
-              --with-dummy \
-              --with-pipe \
-              --with-pa \
-              --with-stdout \
-              --with-avahi \
-              --with-ssl=mbedtls \
-              --with-soxr \
-              --sysconfdir=/etc \
-              --with-mqtt-client \
-              --with-apple-alac \
-              --with-convolution
+        --with-alsa \
+        --with-dummy \
+        --with-pipe \
+        --with-pa \
+        --with-stdout \
+        --with-avahi \
+        --with-ssl=mbedtls \
+        --with-soxr \
+        --sysconfdir=/etc \
+        --with-mqtt-client \
+        --with-apple-alac \
+        --with-convolution
 RUN 	make -j $(nproc)
 RUN 	make install
 
@@ -66,18 +66,18 @@ FROM 	alpine
 
 RUN 	apk update && apk upgrade && \
         apk add \
-              alsa-lib \
-              popt \
-              glib \
-              mbedtls \
-              soxr \
-              avahi \
-              libconfig \
-              libsndfile \
-              libpulse \
-              mosquitto-libs \
-              libgcc \
-              libgc++ && \
+        alsa-lib \
+        popt \
+        glib \
+        mbedtls \
+        soxr \
+        avahi \
+        libconfig \
+        libsndfile \
+        libpulse \
+        mosquitto-libs \
+        libgcc \
+        libgc++ && \
         rm -rf  /lib/apk/db/* && \
         addgroup -g 1000 shairport-sync && \
         adduser -D -u 1000 -G shairport-sync shairport-sync && \
@@ -85,6 +85,6 @@ RUN 	apk update && apk upgrade && \
 
 COPY 	--from=builder-alac /usr/local/lib/libalac.* /usr/local/lib/
 COPY 	--from=builder-sps /etc/shairport-sync* /etc/
-COPY 	--from=builder-sps /usr/local/bin/shairport-sync /usr/local/bin/shairport-sync
+COPY    --from=builder-sps /usr/local/bin/shairport-sync /usr/local/bin/shairport-sync
 
-CMD ["usr/local/bin/shairport-sync"]
+CMD     ["usr/local/bin/shairport-sync"]

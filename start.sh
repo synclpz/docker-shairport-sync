@@ -9,6 +9,7 @@ docker run -d \
     --env PULSE_SERVER=unix:/tmp/pulseaudio.socket \
     --env PULSE_COOKIE=/tmp/pulseaudio.cookie \
     --volume $PA_SOCKET:/tmp/pulseaudio.socket \
+    --volume /var/run/dbus/:/var/run/dbus/ \
     --volume $PWD/pulseaudio.client.conf:/etc/pulse/client.conf \
     --volume /var/run/pulse/native:/var/run/pulse/native \
     --security-opt apparmor=unconfined \
