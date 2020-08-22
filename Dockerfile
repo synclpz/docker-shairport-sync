@@ -25,7 +25,7 @@ RUN apk update && apk upgrade && \
 FROM builder-base AS builder-alac
 
 RUN 	git clone https://github.com/mikebrady/alac
-WORKDIR alac
+WORKDIR /usr/src/alac
 RUN 	autoreconf -fi
 RUN 	./configure
 RUN 	make
@@ -42,7 +42,7 @@ COPY 	--from=builder-alac /usr/local/lib/pkgconfig/alac.pc /usr/local/lib/pkgcon
 COPY 	--from=builder-alac /usr/local/include /usr/local/include
 
 RUN 	git clone https://github.com/mikebrady/shairport-sync
-WORKDIR shairport-sync
+WORKDIR /usr/src/shairport-sync
 RUN 	git checkout "$SHAIRPORT_SYNC_BRANCH"
 RUN 	autoreconf -fi
 RUN 	./configure \
@@ -88,4 +88,3 @@ COPY 	--from=builder-sps /etc/shairport-sync* /etc/
 COPY 	--from=builder-sps /usr/local/bin/shairport-sync /usr/local/bin/shairport-sync
 
 CMD ["usr/local/bin/shairport-sync"]
-
