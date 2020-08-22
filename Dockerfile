@@ -1,6 +1,7 @@
 FROM alpine AS builder-base
 # General Build System:
-RUN apk -U add \
+RUN apk update && apk upgrade && \
+        apk -U add \
         git \
         build-base \
         autoconf \
@@ -16,6 +17,7 @@ RUN apk -U add \
         avahi-dev \
         libconfig-dev \
         libsndfile-dev \
+        pulseaudio-dev \
         mosquitto-dev \
         xmltoman
 
@@ -47,13 +49,12 @@ RUN 	./configure \
               --with-alsa \
               --with-dummy \
               --with-pipe \
+              --with-pa \
               --with-stdout \
               --with-avahi \
               --with-ssl=mbedtls \
               --with-soxr \
               --sysconfdir=/etc \
-              --with-dbus-interface \
-              --with-mpris-interface \
               --with-mqtt-client \
               --with-apple-alac \
               --with-convolution
@@ -63,9 +64,9 @@ RUN 	make install
 # Shairport Sync Runtime System:
 FROM 	alpine
 
-RUN 	apk add \
+RUN 	apk update && apk upgrade && \
+        apk add \
               alsa-lib \
-              dbus \
               popt \
               glib \
               mbedtls \
@@ -73,29 +74,18 @@ RUN 	apk add \
               avahi \
               libconfig \
               libsndfile \
+              libpulse \
               mosquitto-libs \
-              su-exec \
               libgcc \
-              libgc++
-
-RUN 	rm -rf  /lib/apk/db/*
+              libgc++ && \
+        rm -rf  /lib/apk/db/* && \
+        addgroup -g 1000 shairport-sync && \
+        adduser -D -u 1000 -G shairport-sync shairport-sync && \
+        addgroup shairport-sync audio
 
 COPY 	--from=builder-alac /usr/local/lib/libalac.* /usr/local/lib/
 COPY 	--from=builder-sps /etc/shairport-sync* /etc/
-COPY 	--from=builder-sps /etc/dbus-1/system.d/shairport-sync-dbus.conf /etc/dbus-1/system.d/
-COPY 	--from=builder-sps /etc/dbus-1/system.d/shairport-sync-mpris.conf /etc/dbus-1/system.d/
 COPY 	--from=builder-sps /usr/local/bin/shairport-sync /usr/local/bin/shairport-sync
 
-# Create non-root user for running the container -- running as the user 'shairport-sync' also allows
-# Shairport Sync to provide the D-Bus and MPRIS interfaces within the container
-
-RUN 	addgroup shairport-sync 
-RUN 	adduser -D shairport-sync -G shairport-sync
-
-# Add the shairport-sync user to the pre-existing audio group, which has ID 29, for access to the ALSA stuff
-RUN 	addgroup -g 29 docker_audio && addgroup shairport-sync docker_audio
-
-COPY 	start.sh /
-
-ENTRYPOINT [ "/start.sh" ]
+CMD ["usr/local/bin/shairport-sync"]
 
